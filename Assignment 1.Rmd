@@ -1,15 +1,22 @@
 ---
-title: 'Reproducible Research: Peer Assessment 1'
-output:
-  html_document:
-    keep_md: yes
-  word_document: default
+title: "RepRes Assignment 1"
+output: html_document
 ---
 
-## Loading and preprocessing the data
-```{r}
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 
-data<-read.csv("activity.csv")
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+The following code chunk will import the data from the URL
+```{r}
+temp<-tempfile()
+download.file("https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip",temp)
+data<-read.csv(unz(temp,"activity.csv"))
+unlink(temp)
+```
+
+The following code will process the data into a suitable format for analysis
+```{r}
 head(data)
 dim(data)
 str(data)
@@ -18,8 +25,6 @@ data$date<-as.Date(data$date)
 summary(data$date)
 class(data$date)
 ```
-
-## What is mean total number of steps taken per day?
 The following code will respond to the question "What is mean total number of steps taken per day?"
 But first, let's calculate the number of steps per day...
 ```{r}
@@ -29,7 +34,7 @@ data$dummy<-rep(1,nrow(data))
 # Confirm number of intervals in a day
 interval1<-aggregate(data$interval~data$date,FUN=sum)
 unique(interval1[,2]) # The number of intervals is the same for each day in the datset
-steps.per.day<-unique(interval1[,2])*steps1[,2]
+steps.per.day<-mean(interval1[,2])*steps1[,2]
 ```
 Now, a histogram of the number of steps taken per day
 ```{r}
@@ -41,19 +46,17 @@ hist(steps.per.day,breaks=20,xlab="Steps taken in a day")
 mean(steps.per.day)
 median(steps.per.day)
 ```
-
-## What is the average daily activity pattern?
 Now, let's look at the daily activity pattern
 ```{r}
 dap<-aggregate(data$steps~data$interval,FUN=mean)
+View(dap)
 plot(dap[,1],dap[,2],type="l",xlab="Time of day",ylab="Average number of steps in 5 mins")
 ```
 And the time of the day that records the maximum number of steps is
 ```{r}
 dap[which.max(dap[,2]),1]
 ```
-
-## Imputing missing values
+Inputing missing values
 First, number of missing values
 ```{r}
 miss<-which(is.na(data$steps))
@@ -77,7 +80,6 @@ median(steps.per.day1)
 ```
 The mean and the median are now the same, after inputing step missing values with the mean of the interval where the missing values were.
 
-## Are there differences in activity patterns between weekdays and weekends?
 Now, let's see if there are differences between weekdays and weekends
 ```{r}
 # Create factor of weekday or weekend on data with filled-in values
@@ -103,3 +105,12 @@ int.steps<-rbind(dow1,wknd1)
 library(lattice)
 xyplot(mean.steps~interval|weekdy,type="l",data=int.steps,layout=c(1,2))
 ```
+
+
+You can also embed plots, for example:
+
+```{r, echo=FALSE}
+plot(cars)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
